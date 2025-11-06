@@ -1,30 +1,32 @@
 import mongoose from 'mongoose';
 
-type ConnectionObject = {
-  isConnected?: number;
+const globalWithMongoose = global as typeof globalThis & {
+  mongoose: { conn?: typeof mongoose; promise?: Promise<typeof mongoose>; };
 };
 
-const connection: ConnectionObject = {};
-
 async function dbConnect(): Promise<void> {
-  // Check if we have a connection to the database or if it's currently connecting
-  if (connection.isConnected) {
-    console.log('Already connected to the database');
+  if (globalWithMongoose.mongoose?.conn) {
+    console.log('Using existing MongoDB connection');
     return;
   }
 
+  if (!globalWithMongoose.mongoose) globalWithMongoose.mongoose = {};
+
   try {
-    // Attempt to connect to the database
-    const db = await mongoose.connect(process.env.MONGODB_URI || '', {});
+    const opts = {
+      bufferCommands: false,
+    };
 
-    connection.isConnected = db.connections[0].readyState;
+    globalWithMongoose.mongoose.promise = mongoose.connect(
+      process.env.MONGODB_URI || '',
+      opts
+    );
 
-    console.log('Database connected successfully');
+    globalWithMongoose.mongoose.conn = await globalWithMongoose.mongoose.promise;
+    console.log('MongoDB connected successfully');
   } catch (error) {
-    console.error('Database connection failed:', error);
-
-    // Graceful exit in case of a connection error
-    process.exit(1);
+    console.error('MongoDB connection error:', error);
+    throw error;
   }
 }
 

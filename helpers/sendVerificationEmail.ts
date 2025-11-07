@@ -38,7 +38,7 @@ export async function sendVerificationEmail(
       console.error('❌ Resend API Error:', JSON.stringify(error, null, 2));
       return { 
         success: false, 
-        message: `Failed to send email: ${error.message || 'Unknown error'}` 
+        message: `Failed to send email || 'Unknown error'}` 
       };
     }
 
@@ -56,7 +56,7 @@ export async function sendVerificationEmail(
     
     return { 
       success: false, 
-      message: `Email delivery failed: ${emailError?.message || 'Unknown error'}` 
+      message: `Email delivery failed || 'Unknown error'}` 
     };
   }
 }
